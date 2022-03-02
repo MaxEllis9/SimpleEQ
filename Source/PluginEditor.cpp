@@ -263,43 +263,33 @@ void responseCurveComponent::paint (juce::Graphics& g)
         double mag = 1.f;
         auto freq = mapToLog10(double(i)/double(w), 20.0, 20000.0);
         
-        if(!monoChainInstance.isBypassed<ChainPositions::Peak>())
-        {
+        if(!monoChainInstance.isBypassed<ChainPositions::Peak>()){
             mag *= peak.coefficients->getMagnitudeForFrequency(freq, sampleRate);
         }
-        
-        if(!lowcut.isBypassed<0>())
-        {
+        if(!lowcut.isBypassed<0>()){
             mag *= lowcut.get<0>().coefficients->getMagnitudeForFrequency(freq, sampleRate);
         }
-        if(!lowcut.isBypassed<1>())
-        {
+        if(!lowcut.isBypassed<1>()){
             mag *= lowcut.get<1>().coefficients->getMagnitudeForFrequency(freq, sampleRate);
         }
-        if(!lowcut.isBypassed<2>())
-        {
+        if(!lowcut.isBypassed<2>()){
             mag *= lowcut.get<2>().coefficients->getMagnitudeForFrequency(freq, sampleRate);
         }
-        if(!lowcut.isBypassed<3>())
-        {
+        if(!lowcut.isBypassed<3>()){
             mag *= lowcut.get<3>().coefficients->getMagnitudeForFrequency(freq, sampleRate);
         }
         
     
-        if(!highcut.isBypassed<0>())
-        {
+        if(!highcut.isBypassed<0>()){
             mag *= highcut.get<0>().coefficients->getMagnitudeForFrequency(freq, sampleRate);
         }
-        if(!highcut.isBypassed<1>())
-        {
+        if(!highcut.isBypassed<1>()){
             mag *= highcut.get<1>().coefficients->getMagnitudeForFrequency(freq, sampleRate);
         }
-        if(!highcut.isBypassed<2>())
-        {
+        if(!highcut.isBypassed<2>()){
             mag *= highcut.get<2>().coefficients->getMagnitudeForFrequency(freq, sampleRate);
         }
-        if(!highcut.isBypassed<3>())
-        {
+        if(!highcut.isBypassed<3>()){
             mag *= highcut.get<3>().coefficients->getMagnitudeForFrequency(freq, sampleRate);
         }
         
@@ -339,9 +329,12 @@ void responseCurveComponent::resized()
     
     Array<float> freqs
     {
-        20, 30, 40, 50, 100,
-        200, 300, 400, 500, 1000,
-        2000, 3000, 4000, 5000, 10000,
+        20, //30, 40,
+        50, 100,
+        200, //300, 400,
+        500, 1000,
+        2000, //3000, 4000,
+        5000, 10000,
         20000
     };
     
@@ -380,6 +373,37 @@ void responseCurveComponent::resized()
         
     };
 //    g.drawRect(getAnalysisArea());
+    
+    g.setColour(Colours::lightgrey);
+    const int fontHeight = 10;
+    g.setFont(fontHeight);
+    
+    for(int i=0; i<freqs.size(); ++i)
+    {
+        auto f = freqs[i];
+        auto x = xs[i];
+        
+        bool addK = false;
+        String str;
+        if(f > 999.f){
+            addK = true;
+            f /= 1000.f;
+        }
+        str << f;
+        if(addK){
+            str << "k";
+        }
+        str << "Hz";
+        
+        auto textWidth = g.getCurrentFont().getStringWidth(str);
+        Rectangle<int> r;
+        r.setSize(textWidth, fontHeight);
+        r.setCentre(x, 0);
+        r.setY(1);
+        
+        g.drawFittedText(str, r, juce::Justification::centred, 1);
+    }
+        
 }
 
 juce::Rectangle<int> responseCurveComponent::getRenderArea()
