@@ -69,6 +69,44 @@ void LookAndFeel::drawRotarySlider(juce::Graphics & g,
     
 }
 
+void LookAndFeel::drawToggleButton(juce::Graphics &g,
+                                   juce::ToggleButton &toggleButton,
+                                   bool shouldDrawButtonAsHighlighted,
+                                   bool shouldDrawButtonAsDown)
+{
+    using namespace juce;
+    
+    Path powerButton;
+    
+    auto bounds = toggleButton.getLocalBounds();
+    auto size = jmin(bounds.getWidth(), bounds.getHeight()) - 3;
+    auto r = bounds.withSizeKeepingCentre(size, size).toFloat();
+    
+    float ang = 25.f;
+    
+    size -= 7;
+    
+    powerButton.addCentredArc(r.getCentreX(),
+                              r.getCentreY(),
+                              size * 0.5,
+                              size * 0.5,
+                              0.f,
+                              degreesToRadians(ang),
+                              degreesToRadians(360.f - ang),
+                              true);
+    
+    powerButton.startNewSubPath(r.getCentreX(), r.getY());
+    powerButton.lineTo(r.getCentre());
+    
+    PathStrokeType pst(2, PathStrokeType::JointStyle::curved);
+    
+    auto colour = toggleButton.getToggleState() ? Colours::dimgrey : Colours::green;
+    
+    g.setColour(colour);
+    g.strokePath(powerButton, pst);
+    g.drawEllipse(r, 2.f);
+}
+
 //==============================================================================
 
 void RotarySliderWithLabels::paint(juce::Graphics &g)
@@ -325,11 +363,11 @@ void responseCurveComponent::paint (juce::Graphics& g)
         double mag = 1.f;
         auto freq = mapToLog10(double(i)/double(w), 20.0, 20000.0);
         
-        if(!monoChainInstance.isBypassed<ChainPositions::Peak>()){
+        //if(!monoChainInstance.isBypassed<ChainPositions::Peak>()){
             mag *= peak.coefficients->getMagnitudeForFrequency(freq, sampleRate);
-        }
+        //}
         
-        if(!monoChainInstance.isBypassed<ChainPositions::LowCut>()){
+        //if(!monoChainInstance.isBypassed<ChainPositions::LowCut>()){
             if(!lowcut.isBypassed<0>()){
                 mag *= lowcut.get<0>().coefficients->getMagnitudeForFrequency(freq, sampleRate);
             }
@@ -342,10 +380,10 @@ void responseCurveComponent::paint (juce::Graphics& g)
             if(!lowcut.isBypassed<3>()){
                 mag *= lowcut.get<3>().coefficients->getMagnitudeForFrequency(freq, sampleRate);
             }
-        }
+        //}
         
 
-        if(!monoChainInstance.isBypassed<ChainPositions::HighCut>()){
+        //if(!monoChainInstance.isBypassed<ChainPositions::HighCut>()){
             if(!highcut.isBypassed<0>()){
                 mag *= highcut.get<0>().coefficients->getMagnitudeForFrequency(freq, sampleRate);
             }
@@ -358,7 +396,7 @@ void responseCurveComponent::paint (juce::Graphics& g)
             if(!highcut.isBypassed<3>()){
                 mag *= highcut.get<3>().coefficients->getMagnitudeForFrequency(freq, sampleRate);
             }
-        }
+        //}
         
         mags[i] = Decibels::gainToDecibels(mag);
     }
@@ -589,11 +627,19 @@ analyzerEnabledButtonAttachment(audioProcessor.apvts, "Analyzer Enabled", analyz
         addAndMakeVisible(comp);
     }
     
-    setSize (600, 500);
+    peakBypassButton.setLookAndFeel(&lnf);
+    lowCutBypassButton.setLookAndFeel(&lnf);
+    highCutBypassButton.setLookAndFeel(&lnf);
+    
+    setSize (850, 500);
 }
 
 SimpleEQAudioProcessorEditor::~SimpleEQAudioProcessorEditor()
 {
+    
+    peakBypassButton.setLookAndFeel(nullptr);
+    lowCutBypassButton.setLookAndFeel(nullptr);
+    highCutBypassButton.setLookAndFeel(nullptr);
 }
 
 //==============================================================================
