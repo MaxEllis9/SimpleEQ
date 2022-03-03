@@ -243,6 +243,11 @@ juce::AudioProcessorParameter::Listener
     
     void paint(juce::Graphics& g) override;
     void resized() override;
+    
+    void toggleAnalysisEnablement(bool enabled)
+    {
+        shouldShowFFT = enabled; 
+    }
 private:
     SimpleEQAudioProcessor& audioProcessor;
     
@@ -259,9 +264,37 @@ private:
     juce::Rectangle<int> getAnalysisArea();
     
     PathProducer leftPathProducer, rightPathProducer;
+    
+    bool shouldShowFFT = true;
 };
 
 //==============================================================================
+
+struct PowerButton : juce::ToggleButton {};
+struct AnalyzerButton : juce::ToggleButton
+{
+    void resized() override
+    {
+        auto bounds = getLocalBounds();
+        auto insetRect = bounds.reduced(4);
+        
+        randomPath.clear();
+        
+        juce::Random r;
+        
+        randomPath.startNewSubPath(insetRect.getX(),
+                                   insetRect.getY() + insetRect.getHeight() * r.nextFloat());
+        
+        for(auto x = insetRect.getX() + 1; x < insetRect.getRight(); x += 2){
+            randomPath.lineTo(x,
+                              insetRect.getY() + insetRect.getHeight() * r.nextFloat());
+        }
+        
+    }
+    
+    juce::Path randomPath;
+};
+
 /**
 */
 class SimpleEQAudioProcessorEditor  : public juce::AudioProcessorEditor
@@ -300,7 +333,8 @@ private:
                 lowCutSlopeSliderAttachment,
                 highCutSlopeSliderAttachment;
     
-    juce::ToggleButton lowCutBypassButton, peakBypassButton, highCutBypassButton, analyzerEnabledButton;
+    PowerButton lowCutBypassButton, peakBypassButton, highCutBypassButton;
+    AnalyzerButton analyzerEnabledButton;
     
     using ButtonAttachment = APVTS::ButtonAttachment;
     
